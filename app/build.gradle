@@ -1,0 +1,99 @@
+/*
+ * Build.gradle с локальными зависимостями
+ */
+
+plugins {
+    id 'application'
+}
+
+repositories {
+    // Используем локальные файлы
+    flatDir {
+        dirs 'libs'
+    }
+}
+
+dependencies {
+    // Локальные зависимости - если есть файлы в папке libs
+    // implementation name: 'junit-jupiter-5.12.1'
+    
+    // Для тестов создаем заглушку
+    testImplementation files('libs/test-stub.jar')
+}
+
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(8)
+    }
+}
+
+application {
+    mainClass = 'homelauncher.SimpleLauncher'
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'homelauncher.SimpleLauncher',
+            'Implementation-Title': 'HOMELauncheR',
+            'Implementation-Version': '1.0.0'
+        )
+    }
+    
+    from sourceSets.main.output
+    
+    // Включаем ресурсы
+    from('src/main/resources') {
+        include '**/*'
+    }
+    
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+// Создаем задачу для сборки без тестов
+tasks.withType(Test) {
+    enabled = false
+}
+
+jar {
+    manifest {
+        attributes(
+            'Main-Class': 'homelauncher.SimpleLauncher',
+            'Implementation-Title': 'HOMELauncheR',
+            'Implementation-Version': '1.0.0'
+        )
+    }
+    
+    // Копируем ресурсы
+    from {
+        configurations.runtimeClasspath.collect { 
+            it.isDirectory() ? it : zipTree(it) 
+        }
+    }
+    
+    duplicatesStrategy = DuplicatesStrategy.INCLUDE
+}
+
+// Задача для создания простого JAR
+task createSimpleJar(type: Jar) {
+    archiveBaseName = 'HOMELauncheR'
+    archiveVersion = '1.0.0'
+    
+    manifest {
+        attributes(
+            'Main-Class': 'homelauncher.SimpleLauncher',
+            'Created-By': 'Gothbreach',
+            'Build-Date': new Date().format('yyyy-MM-dd HH:mm:ss')
+        )
+    }
+    
+    from sourceSets.main.output
+    
+    // Включаем ресурсы
+    from('src/main/resources') {
+        include '**/*'
+    }
+}
+
+// Делаем createSimpleJar основной задачей сборки
+assemble.dependsOn createSimpleJar

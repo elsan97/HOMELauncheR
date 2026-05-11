@@ -1,0 +1,5 @@
+Manifest-Version: 1.0
+Main-Class: homelauncher.SimpleLauncher
+Implementation-Title: HOMELauncheR
+Implementation-Version: 1.0.0
+
